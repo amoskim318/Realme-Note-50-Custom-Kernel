@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="realme-note-50-custom-kernel-banner.svg" alt="Realme Note 50 Custom Kernel by Amos Kim" width="100%">
+<img src="realme-note-50-custom-kernel-banner.svg" alt="Realme Note 50 Custom Kernel by Amos Kimunya" width="100%">
 
 # Realme Note 50 Custom Kernel
 
@@ -37,29 +37,36 @@ The repository preserves the source code, compatibility patches, compiled module
 | External Wi-Fi Adapter | Realtek RTL8188EUS |
 | USB Vendor/Product ID | `0bda:8179` |
 
-## Available Release
+## Available Releases
 
-### RTL8188EUS Kernel Module
+### Recommended: Magisk Installation
 
-<details>
-<summary><strong>8188eu.ko — Kernel module download</strong></summary>
+**Realme Note 50 RTL8188EUS Driver — Magisk v1.0.2**
 
-- **File:** `8188eu.ko`
-- **Size:** Approximately 2.5 MB
-- **Device tested:** Realme Note 50 (RMX3834)
-- **Architecture:** ARM64
+- Device: Realme Note 50 (RMX3834)
+- Architecture: ARM64
+- Installation: Magisk app → Modules → Install from storage
+- Includes the kernel module, metadata, and boot service.
+
+**[Download Magisk ZIP v1.0.2](https://github.com/amoskim318/Realme-Note-50-Custom-Kernel/raw/refs/heads/main/releases/RTL8188EUS-Realme-Note-50-Magisk-v1.0.2.zip)**
+
+SHA-256:
+
+```text
+cfa86b6b4cffc8a3fe3d96459044c69b65772a987b206b7632b1d9a70744d6cb
+```
+
+### Standalone Kernel Module
 
 **[Download 8188eu.ko](https://github.com/amoskim318/Realme-Note-50-Custom-Kernel/raw/refs/heads/main/releases/8188eu.ko)**
 
-**SHA-256 checksum**
+SHA-256:
 
 ```text
 9da3fb217643542ee3d1c2bc36cddc6c3dc5445c20b2ee24aafb125f7d468b73
 ```
 
-</details>
-
-**Important:** This is a loadable kernel module, not a complete kernel image, boot image, recovery image, or custom ROM. It requires root access and a compatible kernel environment.
+**Important:** The .ko file is a loadable kernel module, not a complete kernel image, boot image, recovery image, or custom ROM. It requires root access and a compatible kernel environment.
 
 ## Development Areas
 
@@ -109,8 +116,19 @@ This is an independent experimental project, not an official Realme product. Ker
 
 <div align="center">
 
-**Developed and documented by Amos Kim**
+**Developed and documented by Amos Kimunya**
 
 *Research • Build • Test • Document*
 
 </div>
+
+---
+
+## Connect with the Developer
+
+**Developer:** [Amos Kimunya](https://github.com/amoskim318)
+
+- [Follow me on GitHub](https://github.com/amoskim318)
+- [Star the Realme Note 50 Custom Kernel repository](https://github.com/amoskim318/Realme-Note-50-Custom-Kernel)
+
+If this project helps you, please consider following my GitHub profile and starring the repository. Thank you for your support!

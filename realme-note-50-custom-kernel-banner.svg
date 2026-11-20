@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2400 960" width="2400" height="960" role="img" aria-label="Realme Note 50 Custom Kernel by Amos Kim">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2400 960" width="2400" height="960" role="img" aria-label="Realme Note 50 Custom Kernel by Amos Kimunya">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#11191b"/>
@@ -46,7 +46,7 @@
     <rect x="650" y="557" width="1100" height="4" rx="2" fill="url(#gold)"/>
     <text x="1200" y="640" fill="url(#gold)" font-size="54" font-weight="600" letter-spacing="13">CUSTOM KERNEL</text>
     <text x="1200" y="705" fill="#aab4b2" font-size="25" letter-spacing="6">KERNEL DEVELOPMENT • DRIVER INTEGRATION • HARDWARE TESTING</text>
-    <text x="1200" y="765" fill="#d4ad63" font-size="27" letter-spacing="5">BY AMOS KIM</text>
+    <text x="1200" y="765" fill="#d4ad63" font-size="27" letter-spacing="5">BY AMOS KIMUNYA</text>
   </g>
 
   <g font-family="monospace" font-size="18" fill="#c49a50" opacity=".8">
