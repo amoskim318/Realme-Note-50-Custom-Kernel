@@ -8,7 +8,7 @@
 
 **An experimental kernel engineering project for the Realme Note 50 (RMX3834).**
 
-[Documentation Wiki](https://github.com/amoskim318/Realme-Note-50-Custom-Kernel/wiki) · [Download Kernel Module](https://github.com/amoskim318/Realme-Note-50-Custom-Kernel/raw/refs/heads/main/releases/8188eu.ko) · [Report an Issue](https://github.com/amoskim318/Realme-Note-50-Custom-Kernel/issues)
+[Documentation Wiki](https://github.com/amoskim318/Realme-Note-50-Custom-Kernel/wiki) · [Download Kernel Module](https://github.com/amoskim318/Realme-Note-50-Custom-Kernel/raw/refs/heads/main/releases/RTL8188EUS-Realme-Note-50-Magisk-v1.0.2.zip) · [Report an Issue](https://github.com/amoskim318/Realme-Note-50-Custom-Kernel/issues)
 
 </div>
 
