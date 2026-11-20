@@ -1,0 +1,245 @@
+--- a/hal/phydm/phydm_api.c
++++ b/hal/phydm/phydm_api.c
+@@ -1128,7 +1128,7 @@
+ 
+ 	#if	ODM_IC_11AC_SERIES_SUPPORT
+ 	if (dm->support_ic_type & ODM_IC_11AC_SERIES) {
+-		if (power_offset > -16 || power_offset < 15) {
++		if (power_offset >= -16 && power_offset <= 15) {
+ 			if (add_half_db)
+ 				power_idx += 1;
+ 
+@@ -1145,7 +1145,7 @@
+ 	
+ 	#if	ODM_IC_11N_SERIES_SUPPORT
+ 	if (dm->support_ic_type & ODM_IC_11N_SERIES) {
+-		if (power_offset > -8 || power_offset < 7) {
++		if (power_offset >= -8 && power_offset <= 7) {
+ 			if (add_half_db)
+ 				power_idx += 1;
+ 
+--- a/hal/phydm/phydm_debug.c
++++ b/hal/phydm/phydm_debug.c
+@@ -887,7 +887,7 @@
+ 		else if (*dm->band_width == CHANNEL_WIDTH_40)
+ 			factor = "128/108";
+ 		else if (*dm->band_width == CHANNEL_WIDTH_20) {
+-			if (rx_ht != 2 || rx_ht != 1)
++			if (rx_ht == 2 || rx_ht == 1)
+ 				factor = "64/52";	/*HT or VHT*/
+ 			else
+ 				factor = "64/48";	/*legacy*/
+--- a/hal/rtl8188e/usb/rtl8188eu_xmit.c
++++ b/hal/rtl8188e/usb/rtl8188eu_xmit.c
+@@ -25,7 +25,7 @@
+ 
+ #ifdef PLATFORM_LINUX
+ 	tasklet_init(&pxmitpriv->xmit_tasklet,
+-		     (void(*)(unsigned long))rtl8188eu_xmit_tasklet,
++		     rtl8188eu_xmit_tasklet,
+ 		     (unsigned long)padapter);
+ #endif
+ #ifdef CONFIG_TX_EARLY_MODE
+--- a/hal/rtl8188e/usb/usb_ops_linux.c
++++ b/hal/rtl8188e/usb/usb_ops_linux.c
+@@ -245,7 +245,7 @@
+ 
+ 
+ 
+-void rtl8188eu_xmit_tasklet(void *priv)
++void rtl8188eu_xmit_tasklet(unsigned long priv)
+ {
+ 	int ret = _FALSE;
+ 	_adapter *padapter = (_adapter *)priv;
+--- a/hal/hal_hci/hal_usb.c
++++ b/hal/hal_hci/hal_usb.c
+@@ -25,7 +25,7 @@
+ 
+ #ifdef PLATFORM_LINUX
+ 	tasklet_init(&precvpriv->recv_tasklet,
+-		     (void(*)(unsigned long))usb_recv_tasklet,
++		     usb_recv_tasklet,
+ 		     (unsigned long)padapter);
+ #endif /* PLATFORM_LINUX */
+ 
+--- a/Makefile
++++ b/Makefile
+@@ -1,8 +1,10 @@
+ EXTRA_CFLAGS += $(USER_EXTRA_CFLAGS) -fno-pie
++EXTRA_CFLAGS += -DRTW_CFG80211_ANDROID_BACKPORT
+ EXTRA_CFLAGS += -O1
+ #EXTRA_CFLAGS += -O3
+ EXTRA_CFLAGS += -Wno-unused-variable
+ EXTRA_CFLAGS += -Wno-unused-value
++EXTRA_CFLAGS += -Wno-parentheses-equality
+ EXTRA_CFLAGS += -Wno-unused-label
+ EXTRA_CFLAGS += -Wno-unused-parameter
+ EXTRA_CFLAGS += -Wno-unused-function
+--- a/include/xmit_osdep.h
++++ b/include/xmit_osdep.h
+@@ -68,7 +68,7 @@
+ struct xmit_buf;
+ 
+ extern int _rtw_xmit_entry(_pkt *pkt, _nic_hdl pnetdev);
+-extern int rtw_xmit_entry(_pkt *pkt, _nic_hdl pnetdev);
++extern netdev_tx_t rtw_xmit_entry(_pkt *pkt, _nic_hdl pnetdev);
+ 
+ #endif /* PLATFORM_LINUX */
+ 
+--- a/include/rtl8188e_xmit.h
++++ b/include/rtl8188e_xmit.h
+@@ -263,7 +263,7 @@
+ 	s32 rtl8188eu_mgnt_xmit(PADAPTER padapter, struct xmit_frame *pmgntframe);
+ 	s32	rtl8188eu_hal_xmitframe_enqueue(_adapter *padapter, struct xmit_frame *pxmitframe);
+ 	s32 rtl8188eu_xmit_buf_handler(PADAPTER padapter);
+-	void rtl8188eu_xmit_tasklet(void *priv);
++	void rtl8188eu_xmit_tasklet(unsigned long priv);
+ 	s32 rtl8188eu_xmitframe_complete(_adapter *padapter, struct xmit_priv *pxmitpriv, struct xmit_buf *pxmitbuf);
+ #endif
+ 
+--- a/include/usb_ops_linux.h
++++ b/include/usb_ops_linux.h
+@@ -89,7 +89,7 @@
+ int usb_write32(struct intf_hdl *pintfhdl, u32 addr, u32 val);
+ int usb_writeN(struct intf_hdl *pintfhdl, u32 addr, u32 length, u8 *pdata);
+ u32 usb_read_port(struct intf_hdl *pintfhdl, u32 addr, u32 cnt, u8 *rmem);
+-void usb_recv_tasklet(void *priv);
++void usb_recv_tasklet(unsigned long priv);
+ 
+ #ifdef CONFIG_USB_INTERRUPT_IN_PIPE
+ void usb_read_interrupt_complete(struct urb *purb, struct pt_regs *regs);
+--- a/os_dep/linux/ioctl_cfg80211.c
++++ b/os_dep/linux/ioctl_cfg80211.c
+@@ -417,7 +417,9 @@
+ 	if (ret != _SUCCESS)
+ 		goto exit;
+ 
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 9, 0))
++#if defined(RTW_CFG80211_ANDROID_BACKPORT)
++        cfg80211_ch_switch_notify(adapter->pnetdev, &chdef, 0, 0);
++#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 9, 0))
+         cfg80211_ch_switch_notify(adapter->pnetdev, &chdef, 0);
+ #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0))
+         cfg80211_ch_switch_notify(adapter->pnetdev, &chdef, 0, 0);
+@@ -1099,7 +1101,7 @@
+ 		u32 freq;
+ 		u16 channel = cur_network->network.Configuration.DSConfig;
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0) || defined(RHEL79))
+-		struct cfg80211_roam_info roam_info;
++		struct cfg80211_roam_info roam_info = {};
+ #endif
+ 
+ 		freq = rtw_ch2freq(channel);
+@@ -1107,7 +1109,7 @@
+ 		#endif
+ 
+ 		#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0) || defined(RHEL79))
+-		#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 0, 0))
++		#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 0, 0)) || defined(RTW_CFG80211_ANDROID_BACKPORT)
+                 roam_info.links[0].channel = notify_channel;
+ 		roam_info.links[0].bssid = cur_network->network.MacAddress;
+ 		#else
+@@ -1669,7 +1671,7 @@
+ }
+ 
+ static int cfg80211_rtw_add_key(struct wiphy *wiphy, struct net_device *ndev
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0))
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0)) || defined(RTW_CFG80211_ANDROID_BACKPORT)
+         , int link_id
+ #endif
+ 	, u8 key_index
+@@ -1816,7 +1818,7 @@
+ }
+ 
+ static int cfg80211_rtw_get_key(struct wiphy *wiphy, struct net_device *ndev
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0))
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0)) || defined(RTW_CFG80211_ANDROID_BACKPORT)
+         , int link_id
+ #endif
+ 	, u8 keyid
+@@ -1984,7 +1986,7 @@
+ }
+ 
+ static int cfg80211_rtw_del_key(struct wiphy *wiphy, struct net_device *ndev,
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0))
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0)) || defined(RTW_CFG80211_ANDROID_BACKPORT)
+         int link_id,
+ #endif
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37)) || defined(COMPAT_KERNEL_RELEASE)
+@@ -2008,7 +2010,7 @@
+ 
+ static int cfg80211_rtw_set_default_key(struct wiphy *wiphy,
+ 	struct net_device *ndev,
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0))
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0)) || defined(RTW_CFG80211_ANDROID_BACKPORT)
+         int link_id,
+ #endif
+         u8 key_index
+@@ -2060,7 +2062,7 @@
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 30))
+ int cfg80211_rtw_set_default_mgmt_key(struct wiphy *wiphy,
+ 	struct net_device *ndev,
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0))
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0)) || defined(RTW_CFG80211_ANDROID_BACKPORT)
+         int link_id,
+ #endif
+         u8 key_index)
+@@ -4917,7 +4919,7 @@
+ 	return ret;
+ }
+ 
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 19, 0))
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 19, 0)) || defined(RTW_CFG80211_ANDROID_BACKPORT)
+ static int cfg80211_rtw_stop_ap(struct wiphy *wiphy, struct net_device *ndev, unsigned int link_id)
+ #else
+ static int cfg80211_rtw_stop_ap(struct wiphy *wiphy, struct net_device *ndev)
+@@ -9679,7 +9681,7 @@
+ 	rtw_cfg80211_indicate_scan_done(adapter, _TRUE);
+ 
+ 	#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 11, 0)) || defined(COMPAT_KERNEL_RELEASE)
+-	#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 19, 0))
++	#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 19, 0)) || defined(RTW_CFG80211_ANDROID_BACKPORT)
+ 	if (wdev->connected) {
+ 	#else
+ 	if (wdev->current_bss) {
+--- a/os_dep/linux/os_intfs.c
++++ b/os_dep/linux/os_intfs.c
+@@ -23,6 +23,7 @@
+ 
+ #endif
+ 
++MODULE_IMPORT_NS(VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver);
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Realtek Wireless Lan Driver");
+ MODULE_AUTHOR("Realtek Semiconductor Corp.");
+--- a/os_dep/linux/usb_ops_linux.c
++++ b/os_dep/linux/usb_ops_linux.c
+@@ -726,7 +726,7 @@
+ int recvbuf2recvframe(PADAPTER padapter, void *ptr);
+ 
+ #ifdef CONFIG_USE_USB_BUFFER_ALLOC_RX
+-void usb_recv_tasklet(void *priv)
++void usb_recv_tasklet(unsigned long priv)
+ {
+ 	struct recv_buf *precvbuf = NULL;
+ 	_adapter	*padapter = (_adapter *)priv;
+@@ -864,7 +864,7 @@
+ }
+ #else	/* CONFIG_USE_USB_BUFFER_ALLOC_RX */
+ 
+-void usb_recv_tasklet(void *priv)
++void usb_recv_tasklet(unsigned long priv)
+ {
+ 	_pkt			*pskb;
+ 	_adapter		*padapter = (_adapter *)priv;
+--- a/os_dep/linux/xmit_linux.c
++++ b/os_dep/linux/xmit_linux.c
+@@ -513,7 +513,7 @@
+ 	return 0;
+ }
+ 
+-int rtw_xmit_entry(_pkt *pkt, _nic_hdl pnetdev)
++netdev_tx_t rtw_xmit_entry(_pkt *pkt, _nic_hdl pnetdev)
+ {
+ 	_adapter *padapter = (_adapter *)rtw_netdev_priv(pnetdev);
+ 	struct	mlme_priv	*pmlmepriv = &(padapter->mlmepriv);
