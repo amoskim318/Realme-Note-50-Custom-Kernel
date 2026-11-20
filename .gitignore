@@ -1,0 +1,17 @@
+*.o
+*.ko
+*.mod
+*.mod.c
+*.cmd
+*.symvers
+Module.symvers
+modules.order
+.*.cmd
+.tmp_versions/
+*.a
+*.so
+*.pyc
+__pycache__/
+.env
+*.pem
+*.key
